@@ -15,11 +15,13 @@ def install(base):
 
   # Dependencies
   npm_install = r.build()
+  npm_install.notice('npm setup')
   npm_install.run('npm', 'install')
   npm_install.execute()
 
   # Source packages
   bower_install = r.build()
+  bower_install.notice('bower setup')
   bower_install.run('node', bower, 'install')
   bower_install.execute()
 
@@ -48,18 +50,23 @@ def bower_publish(base, target, sources, cache='bower_components'):
       :param sources: An array of file targets to find and copy.
       :param cache: The cache folder to search in.
   """
-  cache = os.path.join(os.path.dirname(base), cache)
-  target.insert(0, os.path.dirname(base))
-  found = []
-  for root, dirs, files in os.walk(os.path.join(base, cache)):
-    for file in files:
-      for path in sources:
-        if path not in found:
-          if file.lower() == path.lower():
-            source = os.path.join(root, file)
-            output = target[:]
-            output.append(file)
-            output = os.path.join(*target)
-            found.append(path)
-            print('- {0}Publishing{1}: {2}'.format(Color.GREEN, Color.RESET, source))
-            run('cp', source, output)
+  def runner(*args):
+    cpath = os.path.join(os.path.dirname(base), cache)
+    target.insert(0, os.path.dirname(base))
+    found = []
+    for root, dirs, files in os.walk(os.path.join(base, cpath)):
+      for file in files:
+        for path in sources:
+          if path not in found:
+            if file.lower() == path.lower():
+              source = os.path.join(root, file)
+              output = target[:]
+              output.append(file)
+              output = os.path.join(*target)
+              found.append(path)
+              print('- {0}Publishing{1}: {2}'.format(Color.GREEN, Color.RESET, source))
+              run('cp', source, output)
+  build = r.build()
+  build.notice('bower publish')
+  build.command(runner)
+  build.execute()

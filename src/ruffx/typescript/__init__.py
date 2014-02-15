@@ -37,9 +37,10 @@ def compile(base, output, source, bind=True, skip=False):
     source_folder = path(*source[:-1])
 
     # Build
-    build = r.build().chdir(source_folder)
-    build.run('node', tsc_path, source_path, '--declaration', '--out',
-              output_path)
+    build = r.build()
+    build.notice('Typescript compile')
+    build.chdir(source_folder)
+    build.run('node', tsc_path, source_path, '--declaration', '--out', output_path)
 
     # Target
     target = r.target(timeout=10)
@@ -72,7 +73,8 @@ def test(base, output, source, bind=True):
     output_folder = path(*output[:-1])
 
     # Build
-    build = compile(base, output, source, bind, skip=True)
+    build = compile(base, output, source, bind=False, skip=True)
+    build.notice('Typescript tests')
     build.chdir(output_folder)
     build.run(runner, output_path)
 
@@ -133,15 +135,16 @@ def compile_files(base, output, source, bind=True, amd=False):
             required_file = os.path.join(output_folder, output_module_name)
             run('mkdir', '-p', os.path.dirname(required_file))
             if amd:
-                run('node', tsc_path, path, '--module', 'amd', '--out',
-                    required_file)
+                run('node', tsc_path, path, '--module', 'amd', '--out', required_file)
             else:
                 run('node', tsc_path, path, '--out', required_file)
             if os.path.exists(generated_file):  # wtf?
                 run('mv', generated_file, required_file)
 
     # Build
-    build = r.build().chdir(source_folder)
+    build = r.build()
+    build.notice('Typescript multifile compile')
+    build.chdir(source_folder)
     build.collect('.*\.ts$', collection)
 
     # Target

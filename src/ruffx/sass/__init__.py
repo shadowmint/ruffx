@@ -31,7 +31,7 @@ def compile(base, output, source, bind=True):
   source_path = path(*source)
 
   # Build
-  build = r.build().run('sass', source_path, output_path)
+  build = r.build().notice('Sass compile').run('sass', source_path, output_path)
 
   # Target
   target = r.target(timeout=10)
