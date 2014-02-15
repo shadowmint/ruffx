@@ -1,5 +1,7 @@
+import os
 import ruff as r
 from ruff.utils.run import run
+from ruff.os import Color
 
 
 def install(base):
@@ -33,7 +35,7 @@ def bower_publish(base, target, sources, cache='bower_components'):
       folder.
 
       This searches the cache folder for files that match the
-      given pattern and install then in the target folder. 
+      given pattern and install then in the target folder.
       It's not really designed to copy entire folders over,
       and it makes no effort to protect files in the target
       folder.
@@ -46,5 +48,18 @@ def bower_publish(base, target, sources, cache='bower_components'):
       :param sources: An array of file targets to find and copy.
       :param cache: The cache folder to search in.
   """
-  for path in sources:
-    pass
+  cache = os.path.join(os.path.dirname(base), cache)
+  target.insert(0, os.path.dirname(base))
+  found = []
+  for root, dirs, files in os.walk(os.path.join(base, cache)):
+    for file in files:
+      for path in sources:
+        if path not in found:
+          if file.lower() == path.lower():
+            source = os.path.join(root, file)
+            output = target[:]
+            output.append(file)
+            output = os.path.join(*target)
+            found.append(path)
+            print('- {0}Publishing{1}: {2}'.format(Color.GREEN, Color.RESET, source))
+            run('cp', source, output)
